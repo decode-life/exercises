@@ -71,3 +71,5 @@ fabric.properties
 .vcs.xml
 
 .idea
+
+target
