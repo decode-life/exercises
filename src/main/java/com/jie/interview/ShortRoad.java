@@ -20,6 +20,14 @@ public class ShortRoad {
         System.out.println(shortRoadBetter(array));
     }
 
+    /**
+     * 动态规划
+     * 递归算法
+     * @param grid
+     * @param i
+     * @param j
+     * @return
+     */
     public static int calculate(int[][] grid, int i, int j) {
         if (i == grid.length || j == grid[0].length) return Integer.MAX_VALUE;
         if (i == grid.length - 1 && j == grid[0].length - 1) return grid[i][j];
@@ -46,6 +54,11 @@ public class ShortRoad {
         return calc[array.length -1][array[0].length -1];
     }
 
+    /**
+     * 复用原先的矩阵空间，节省空间复杂度
+     * @param array
+     * @return
+     */
     public static int shortRoadBetter(int[][] array) {
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
@@ -61,6 +74,7 @@ public class ShortRoad {
             }
         }
 
+        System.out.println("=====");
         for (int i = 0; i < array.length; i++) {
             for (int j = 0; j < array[0].length; j++) {
                 System.out.print(array[i][j]);
@@ -68,6 +82,7 @@ public class ShortRoad {
             }
             System.out.println();
         }
+        System.out.println("=====");
         return array[array.length -1][array[0].length -1];
     }
 }
