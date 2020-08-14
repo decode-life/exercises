@@ -34,6 +34,12 @@ public class MergeSort {
         return MergeSort(MergeSort(left), MergeSort(right));
     }
 
+    /**
+     * 归并排序，2路归并，直接一个大循环相当于选择排序了
+     * @param left
+     * @param right
+     * @return
+     */
     public static int[] MergeSort(int[] left,int[] right){
         int[] result = new int[left.length + right.length];
 
