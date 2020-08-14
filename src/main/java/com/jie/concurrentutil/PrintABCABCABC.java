@@ -1,6 +1,8 @@
 package com.jie.concurrentutil;
 
+import java.util.concurrent.LinkedTransferQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TransferQueue;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.LockSupport;
 import java.util.concurrent.locks.ReentrantLock;
@@ -18,27 +20,25 @@ public class PrintABCABCABC {
     private static Condition b = lock.newCondition();
     private static Condition c = lock.newCondition();
 
-    private static volatile int flag = 0;
+    private static volatile Flag flag = Flag.T1;
 
     private static Thread worker = null;
     private static Thread worker1 = null;
     private static Thread worker2 = null;
 
     public static void main(String[] args) {
-        lockSupport();
+        transferQueue();
     }
 
     public static void volatileResolve() {
         worker = new Thread(() -> {
             for (int i = 0; i < 3; i++) {
                 try {
-                    if(i != 0) {
-                        while (flag != 0) {
-                            Thread.sleep(100);
-                        }
+                    while (flag != Flag.T1) {
+                        Thread.sleep(100);
                     }
                     System.out.println(i + "- A");
-                    flag = 1;
+                    flag = Flag.T2;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -48,11 +48,11 @@ public class PrintABCABCABC {
         worker1 = new Thread(() -> {
             for (int i = 0; i < 3; i++) {
                 try {
-                    while (flag != 1) {
+                    while (flag != Flag.T2) {
                         Thread.sleep(100);
                     }
                     System.out.println(i + "- B");
-                    flag = 2;
+                    flag = Flag.T3;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -62,11 +62,11 @@ public class PrintABCABCABC {
         worker2 = new Thread(() -> {
             for (int i = 0; i < 3; i++) {
                 try {
-                    while (flag != 2) {
+                    while (flag != Flag.T3) {
                         Thread.sleep(100);
                     }
                     System.out.println(i + "- C");
-                    flag = 0;
+                    flag = Flag.T1;
                 }catch (Exception e){
                     e.printStackTrace();
                 }
@@ -177,5 +177,54 @@ public class PrintABCABCABC {
         worker.start();
         worker1.start();
         worker2.start();
+    }
+
+    public static void transferQueue() {
+        TransferQueue<String> transferQueueAB = new LinkedTransferQueue<>();
+        TransferQueue<String> transferQueueBC = new LinkedTransferQueue<>();
+        TransferQueue<String> transferQueueCA = new LinkedTransferQueue<>();
+
+        worker = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    transferQueueAB.transfer("A");
+                    System.out.println(i + "A===== " + transferQueueCA.take());
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        },"A");
+
+        worker1 = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    System.out.println(i + "B===== " + transferQueueAB.take());
+                    transferQueueBC.transfer("B");
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        },"B");
+
+        worker2 = new Thread(() -> {
+            try {
+                for (int i = 0; i < 3; i++) {
+                    System.out.println(i + "C===== " + transferQueueBC.take());
+                    transferQueueCA.transfer("C");
+                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        },"C");
+
+        worker.start();
+        worker1.start();
+        worker2.start();
+    }
+
+    //TODO 还可以用blockingqueue
+
+    enum Flag{
+        T1,T2,T3;
     }
 }
